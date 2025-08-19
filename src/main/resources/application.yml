@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: ot-zero-gen-ai
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+# springdoc-openapi
+springdoc:
+  group-configs:
+    - group: 'default'
+      packagesToScan: com.oceantaker.otzerogenai.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
