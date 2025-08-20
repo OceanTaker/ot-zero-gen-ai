@@ -1,6 +1,12 @@
 spring:
   application:
     name: ot-zero-gen-ai
+  # mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ot_zero_gen_ai
+    username: root
+    password: 4869
 server:
   port: 8123
   servlet:
