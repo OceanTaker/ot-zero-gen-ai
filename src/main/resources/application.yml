@@ -7,6 +7,8 @@ spring:
     url: jdbc:mysql://localhost:3306/ot_zero_gen_ai
     username: root
     password: 4869
+  profiles:
+    active: local
 server:
   port: 8123
   servlet:
