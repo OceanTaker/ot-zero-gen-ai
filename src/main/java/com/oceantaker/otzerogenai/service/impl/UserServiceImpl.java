@@ -7,7 +7,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.oceantaker.otzerogenai.exception.BusinessException;
 import com.oceantaker.otzerogenai.exception.ErrorCode;
-import com.oceantaker.otzerogenai.model.dto.UserQueryRequest;
+import com.oceantaker.otzerogenai.model.dto.user.UserQueryRequest;
 import com.oceantaker.otzerogenai.model.entity.User;
 import com.oceantaker.otzerogenai.mapper.UserMapper;
 import com.oceantaker.otzerogenai.model.enums.UserRoleEnum;

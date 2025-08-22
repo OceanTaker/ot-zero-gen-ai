@@ -2,7 +2,7 @@ package com.oceantaker.otzerogenai.service;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-import com.oceantaker.otzerogenai.model.dto.UserQueryRequest;
+import com.oceantaker.otzerogenai.model.dto.user.UserQueryRequest;
 import com.oceantaker.otzerogenai.model.entity.User;
 import com.oceantaker.otzerogenai.model.vo.LoginUserVO;
 import com.oceantaker.otzerogenai.model.vo.UserVO;
