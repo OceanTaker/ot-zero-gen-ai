@@ -1,4 +1,4 @@
-package com.oceantaker.otzerogenai.model.dto;
+package com.oceantaker.otzerogenai.model.dto.user;
 
 import com.oceantaker.otzerogenai.common.PageRequest;
 import lombok.Data;
