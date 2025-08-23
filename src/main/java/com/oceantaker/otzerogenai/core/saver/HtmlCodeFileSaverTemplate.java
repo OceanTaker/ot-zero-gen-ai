@@ -26,9 +26,9 @@ public class HtmlCodeFileSaverTemplate extends  CodeFileSaverTemplate<HtmlCodeRe
 
     // 重写父类的校验参数方法
     @Override
-    protected void validateInput(HtmlCodeResult result) {
+    protected void validateInput(HtmlCodeResult result, Long appId) {
         // 父类的 参数为空校验
-        super.validateInput(result);
+        super.validateInput(result, appId);
         // HTML 代码不能为空
         if(StrUtil.isBlank(result.getHtmlCode())){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "HTML 代码不能为空");

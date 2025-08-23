@@ -2,20 +2,25 @@ package com.oceantaker.otzerogenai.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.oceantaker.otzerogenai.core.AiGeneratorFacade;
 import com.oceantaker.otzerogenai.exception.BusinessException;
 import com.oceantaker.otzerogenai.exception.ErrorCode;
+import com.oceantaker.otzerogenai.exception.ThrowUtils;
 import com.oceantaker.otzerogenai.mapper.AppMapper;
 import com.oceantaker.otzerogenai.model.dto.app.AppQueryRequest;
 import com.oceantaker.otzerogenai.model.entity.App;
 import com.oceantaker.otzerogenai.model.entity.User;
+import com.oceantaker.otzerogenai.model.enums.CodeGenTypeEnum;
 import com.oceantaker.otzerogenai.model.vo.AppVO;
 import com.oceantaker.otzerogenai.model.vo.UserVO;
 import com.oceantaker.otzerogenai.service.AppService;
 import com.oceantaker.otzerogenai.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +40,27 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     @Resource
     // 这里调用userService而不是userMapper，因为最好一个服务去调用另一个服务
     private UserService userService;
+
+    @Resource
+    private AiGeneratorFacade aiGeneratorFacade;
+
+    @Override
+    public Flux<String> chatToGenCode(Long appId, String userMessage, User loginUser) {
+        // 1. 参数校验
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 错误");
+        ThrowUtils.throwIf(StrUtil.isBlank(userMessage), ErrorCode.PARAMS_ERROR, "提示词不能为空");
+        // 2. 查询应用信息
+        App app = this.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
+        // 3. 权限校验
+        ThrowUtils.throwIf(!app.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR, "无权限操作");
+        // 4. 获取应用生成代码类型
+        String codeGenType = app.getCodeGenType();
+        CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType); // 转成生成代码类型枚举类
+        ThrowUtils.throwIf(codeGenTypeEnum == null, ErrorCode.PARAMS_ERROR, "生成类型不能为空");
+        // 5. 调用 AI 生成代码 调用门面
+        return aiGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
+    }
 
     @Override
     public AppVO getAppVO(App app) {

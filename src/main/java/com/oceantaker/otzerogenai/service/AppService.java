@@ -4,7 +4,9 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.oceantaker.otzerogenai.model.dto.app.AppQueryRequest;
 import com.oceantaker.otzerogenai.model.entity.App;
+import com.oceantaker.otzerogenai.model.entity.User;
 import com.oceantaker.otzerogenai.model.vo.AppVO;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -14,6 +16,16 @@ import java.util.List;
  * @author <a href="https://github.com/OceanTaker">程序员OceanTaker</a>
  */
 public interface AppService extends IService<App> {
+
+    /**
+     * 通过对话生成应用代码
+     *
+     * @param appId 应用 ID
+     * @param userMessage 用户提示词 因为该方法会复用在其他地方，所以还是传入这个参数，方便后续扩展
+     * @param loginUser 登录用户
+     * @return
+     */
+    Flux<String> chatToGenCode(Long appId, String userMessage, User loginUser);
 
     /**
      * 获取应用封装类
