@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.oceantaker.otzerogenai.ai.model.HtmlCodeResult;
 import com.oceantaker.otzerogenai.ai.model.MultiFileCodeResult;
+import com.oceantaker.otzerogenai.constant.AppConstant;
 import com.oceantaker.otzerogenai.model.enums.CodeGenTypeEnum;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class CodeFileSaver {
      * 文件保存的根目录
      */
     // System.getProperty("user.dir")获取当前Java进程的工作目录（即启动JVM时的路径）
-    private static final String FILE_SAVE_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_output";
+    private static final String FILE_SAVE_ROOT_DIR = AppConstant.CODE_OUTPUT_ROOT_DIR;
 
     /**
      * 保存html 网页代码
