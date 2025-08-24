@@ -38,10 +38,9 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { register } from '@/api/userController.ts'
+import { userRegister } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import { reactive } from 'vue'
-import type {RuleObject} from 'ant-design-vue/es/form'
 
 const router = useRouter()
 
@@ -70,7 +69,7 @@ const validateCheckPassword = (rule: unknown, value: string, callback: (error?: 
  * @param values
  */
 const handleSubmit = async (values: API.UserRegisterRequest) => {
-  const res = await register(values)
+  const res = await userRegister(values)
   // 注册成功，跳转到登录页面
   if (res.data.code === 0) {
     message.success('注册成功')
@@ -86,8 +85,10 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
 
 <style scoped>
 #userRegisterPage {
-  max-width: 360px;
-  margin: 0 auto;
+  background: white;
+  max-width: 720px;
+  padding: 24px;
+  margin: 24px auto;
 }
 
 .title {
