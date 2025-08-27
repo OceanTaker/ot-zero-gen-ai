@@ -8,7 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.oceantaker.otzerogenai.constant.AppConstant;
-import com.oceantaker.otzerogenai.core.AiGeneratorFacade;
+import com.oceantaker.otzerogenai.core.AiCodeGeneratorFacade;
 import com.oceantaker.otzerogenai.exception.BusinessException;
 import com.oceantaker.otzerogenai.exception.ErrorCode;
 import com.oceantaker.otzerogenai.exception.ThrowUtils;
@@ -53,7 +53,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     private UserService userService;
 
     @Resource
-    private AiGeneratorFacade aiGeneratorFacade;
+    private AiCodeGeneratorFacade aiCodeGeneratorFacade;
 
     @Resource
     private ChatHistoryService chatHistoryService;
@@ -75,7 +75,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         // 5. 在调用 AI 前，先保存用户消息到数据库中
         chatHistoryService.addChatMessage(appId, userMessage, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
         // 6. 调用 AI 生成代码 (流式) 调用门面
-        Flux<String> contentFlux = aiGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
+        Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
         // 7. 收集 AI 响应的内容，并且在完成后保存到对话历史
         StringBuilder aiResponseBuilder = new StringBuilder();
         return contentFlux.map(chunk -> {

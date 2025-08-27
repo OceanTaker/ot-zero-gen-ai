@@ -10,18 +10,15 @@ import reactor.core.publisher.Flux;
 import java.io.File;
 import java.util.List;
 
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
-class AiGeneratorFacadeTest {
+class AiCodeGeneratorFacadeTest {
 
     @Resource
-    private AiGeneratorFacade aiGeneratorFacade;
+    private AiCodeGeneratorFacade aiCodeGeneratorFacade;
 
     @Test
     void generateAndSaveCode() {
-        File file = aiGeneratorFacade.generateAndSaveCode("生成一个登录页面，不多于20行", CodeGenTypeEnum.MULTI_FILE, 1L);
+        File file = aiCodeGeneratorFacade.generateAndSaveCode("生成一个登录页面，不多于20行", CodeGenTypeEnum.MULTI_FILE, 1L);
         Assertions.assertNotNull(file);
     }
 
@@ -29,7 +26,7 @@ class AiGeneratorFacadeTest {
     @Test
     void generateAndSaveCodeStream() {
         // 使用了混合设计模式后，需要切换单文件生成和多文件生成只需要更改下面这行最后的.MULTI_FILE和.HTML
-        Flux<String> codeStream = aiGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面，不多于20行", CodeGenTypeEnum.MULTI_FILE, 1L);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面，不多于20行", CodeGenTypeEnum.MULTI_FILE, 1L);
         // 阻塞等待所有数据收集完成
         List<String> result = codeStream.collectList().block();
         // 验证结果
@@ -38,4 +35,18 @@ class AiGeneratorFacadeTest {
         String completeContent = String.join("", result);
         Assertions.assertNotNull(completeContent);
     }
+
+    @Test
+    void generateVueProjectCodeStream() {
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(
+                "简单的任务记录网站，总代码量不超过 200 行",
+                CodeGenTypeEnum.VUE_PROJECT, 1L);
+        // 阻塞等待所有数据收集完成
+        List<String> result = codeStream.collectList().block();
+        // 验证结果
+        Assertions.assertNotNull(result);
+        String completeContent = String.join("", result);
+        Assertions.assertNotNull(completeContent);
+    }
+
 }
