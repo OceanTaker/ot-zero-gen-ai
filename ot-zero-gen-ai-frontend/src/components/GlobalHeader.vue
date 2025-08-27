@@ -6,7 +6,7 @@
         <RouterLink to="/">
           <div class="header-left">
             <img class="logo" src="@/assets/logo.png" alt="Logo" />
-            <h1 class="site-title">鱼皮应用生成</h1>
+            <h1 class="site-title">OT 应用生成</h1>
           </div>
         </RouterLink>
       </a-col>
@@ -84,8 +84,8 @@ const originItems = [
   },
   {
     key: 'others',
-    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
-    title: '编程导航',
+    label: h('a', { href: 'https://space.bilibili.com/74164986', target: '_blank' }, '深海OT攻略组'),
+    title: '深海OT攻略组',
   },
 ]
 
