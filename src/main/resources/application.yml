@@ -1,18 +1,35 @@
 spring:
   application:
     name: ot-zero-gen-ai
+    # session 配置
+  session:
+    store-type: redis
+    # session 30 天过期
+    timeout: 2592000
   # mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ot_zero_gen_ai
     username: root
     password: 4869
+  # redis
+  data:
+    redis:
+      host: 192.168.100.128
+      port: 6379
+      password: 1234
+      ttl: 3600 # 过期时间
+      database: 0
   profiles:
     active: local
 server:
   port: 8123
   servlet:
     context-path: /api
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
 # springdoc-openapi
 springdoc:
   group-configs:

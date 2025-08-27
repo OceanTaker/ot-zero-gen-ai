@@ -16,16 +16,21 @@ import com.oceantaker.otzerogenai.mapper.AppMapper;
 import com.oceantaker.otzerogenai.model.dto.app.AppQueryRequest;
 import com.oceantaker.otzerogenai.model.entity.App;
 import com.oceantaker.otzerogenai.model.entity.User;
+import com.oceantaker.otzerogenai.model.enums.ChatHistoryMessageTypeEnum;
 import com.oceantaker.otzerogenai.model.enums.CodeGenTypeEnum;
 import com.oceantaker.otzerogenai.model.vo.AppVO;
 import com.oceantaker.otzerogenai.model.vo.UserVO;
 import com.oceantaker.otzerogenai.service.AppService;
+import com.oceantaker.otzerogenai.service.ChatHistoryService;
 import com.oceantaker.otzerogenai.service.UserService;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +47,16 @@ import java.util.stream.Collectors;
 public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppService{
 
 
+    private static final Logger log = LoggerFactory.getLogger(AppServiceImpl.class);
     @Resource
     // 这里调用userService而不是userMapper，因为最好一个服务去调用另一个服务
     private UserService userService;
 
     @Resource
     private AiGeneratorFacade aiGeneratorFacade;
+
+    @Resource
+    private ChatHistoryService chatHistoryService;
 
     @Override
     public Flux<String> chatToGenCode(Long appId, String userMessage, User loginUser) {
@@ -63,8 +72,25 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         String codeGenType = app.getCodeGenType();
         CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType); // 转成生成代码类型枚举类
         ThrowUtils.throwIf(codeGenTypeEnum == null, ErrorCode.PARAMS_ERROR, "生成类型不能为空");
-        // 5. 调用 AI 生成代码 调用门面
-        return aiGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
+        // 5. 在调用 AI 前，先保存用户消息到数据库中
+        chatHistoryService.addChatMessage(appId, userMessage, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
+        // 6. 调用 AI 生成代码 (流式) 调用门面
+        Flux<String> contentFlux = aiGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
+        // 7. 收集 AI 响应的内容，并且在完成后保存到对话历史
+        StringBuilder aiResponseBuilder = new StringBuilder();
+        return contentFlux.map(chunk -> {
+            // 实时 AI 响应的内容
+            aiResponseBuilder.append(chunk);
+            return chunk;
+        }).doOnComplete(() -> {
+            // 流式返回完成后，保存 AI 消息到对话历史中
+            String aiResponse = aiResponseBuilder.toString();
+            chatHistoryService.addChatMessage(appId, aiResponse, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
+        }).doOnError(error -> {
+            // 即使 AI 回复失败，也要流式返回完成后，保存 AI 错误信息到对话历史中
+            String errorResponse = "AI 回复失败：" + error.getMessage();
+            chatHistoryService.addChatMessage(appId, errorResponse, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
+        });
     }
 
     @Override
@@ -190,6 +216,31 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
                 .orderBy(sortField, "ascend".equals(sortOrder));
     }
 
+    /**
+     * 删除应用时，关联删除对话历史
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean removeById(Serializable id){
+        if(id == null){
+            return false;
+        }
+        long appId = Long.parseLong(id.toString());
+        if(appId <= 0){
+            return false;
+        }
+        // 先删除关联的对话历史
+        try {
+            chatHistoryService.deleteByAppId(appId);
+        } catch (Exception e) {
+            log.error("删除应用时，关联删除对话历史失败：{}", e.getMessage());
+        }
+        // 再删除应用
+        return super.removeById(id);
+
+    }
 
 
 }

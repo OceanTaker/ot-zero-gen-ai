@@ -1,6 +1,7 @@
 package com.oceantaker.otzerogenai.core;
 
 import com.oceantaker.otzerogenai.ai.AiCodeGeneratorService;
+import com.oceantaker.otzerogenai.ai.AiCodeGeneratorServiceFactory;
 import com.oceantaker.otzerogenai.ai.model.HtmlCodeResult;
 import com.oceantaker.otzerogenai.ai.model.MultiFileCodeResult;
 import com.oceantaker.otzerogenai.core.parser.CodeParserExecutor;
@@ -21,7 +22,7 @@ import java.io.File;
 public class AiGeneratorFacade {
 
     @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
 
     /**
      * 统一入口：根据类型生成代码并保存代码
@@ -37,6 +38,8 @@ public class AiGeneratorFacade {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "生成类型不能为空");
         }
         // 2. 调用 AI 生成代码
+        // 根据 appId 获取对应的 AI 服务实例
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         return switch (codeGenTypeEnum) {
             case HTML -> {
                 HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
@@ -68,6 +71,8 @@ public class AiGeneratorFacade {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "生成类型不能为空");
         }
         // 2. 调用 AI 生成代码
+        // 根据 appId 获取对应的 AI 服务实例
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         return switch (codeGenTypeEnum) {
             case HTML -> {
                 Flux<String> codeStream = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);
