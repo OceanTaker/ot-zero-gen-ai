@@ -44,7 +44,7 @@ public class UserController {
      */
     @PostMapping("/register")
     // 返回自定义响应
-    public BaseResponse<Long> register(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         ThrowUtils.throwIf(userRegisterRequest == null, ErrorCode.PARAMS_ERROR);
 //        userRegisterRequest.allget即可自动生成下面三行，使用 generate all getter and setter 插件
         String userAccount = userRegisterRequest.getUserAccount();
