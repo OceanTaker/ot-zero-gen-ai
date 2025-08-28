@@ -24,6 +24,7 @@ import com.oceantaker.otzerogenai.model.vo.AppVO;
 import com.oceantaker.otzerogenai.model.vo.UserVO;
 import com.oceantaker.otzerogenai.service.AppService;
 import com.oceantaker.otzerogenai.service.ChatHistoryService;
+import com.oceantaker.otzerogenai.service.ScreenshotService;
 import com.oceantaker.otzerogenai.service.UserService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -65,6 +66,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
     @Resource
     private VueProjectBuilder vueProjectBuilder;
+
+    @Resource
+    protected ScreenshotService screenshotService;
 
     @Override
     public Flux<String> chatToGenCode(Long appId, String userMessage, User loginUser) {
@@ -140,8 +144,33 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         updataApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updataApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更新应用部署信息失败");
-        // 10. 返回可访问的 URL 地址
-        return String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        // 10. 得到可访问的 URL 地址
+        String appDeployUrl = String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        // 11. 异步生成截图并且更新应用封面
+        generateAppScreenshotAsync(appId, appDeployUrl);
+
+        return appDeployUrl;
+    }
+
+    /**
+     * 异步生成应用截图并更新封面
+     *
+     * @param appId  应用ID
+     * @param appUrl 应用访问URL
+     */
+    @Override
+    public void generateAppScreenshotAsync(Long appId, String appUrl) {
+        // 使用虚拟线程并执行
+        Thread.startVirtualThread(() -> {
+            // 调用截图服务并上传
+            String screenshotUrl = screenshotService.generateAndUploadScreenshot(appUrl);
+            // 更新数据库的封面
+            App updateApp = new App();
+            updateApp.setId(appId);
+            updateApp.setCover(screenshotUrl);
+            boolean updated = this.updateById(updateApp);
+            ThrowUtils.throwIf(!updated, ErrorCode.OPERATION_ERROR, "更新应用封面字段失败");
+        });
     }
 
     @Override
